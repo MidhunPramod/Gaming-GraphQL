@@ -180,6 +180,6 @@ module.exports = {
       }
     });
 
-    return "Successfully send request!";
+    return "Successfully sent request!";
   },
 };
