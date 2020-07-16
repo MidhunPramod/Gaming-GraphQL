@@ -1,6 +1,7 @@
 const Player = require("../../models/Player");
 const Game = require("../../models/Game");
 const Request = require("../../models/Request");
+const { request } = require("express");
 
 const transformGame = (game) => {
   return { ...game._doc, _id: game.id };
@@ -47,6 +48,46 @@ module.exports = {
     } catch (error) {
       throw error;
     }
+  },
+  mutualFriends: async (args) => {
+    const playerA = await Player.findOne({ name: args.playerA });
+    const playerB = await Player.findOne({ name: args.playerB });
+
+    if (!playerA || !playerB) {
+      throw new Error("Requested Player invalid");
+    }
+
+    const mutual_friends = playerA.friends.filter((friend) =>
+      playerB.friends.includes(friend)
+    );
+
+    return mutual_friends.length;
+  },
+  recommendGames: async (args) => {
+    const player = await Player.findOne({ name: args.player });
+
+    const tags = [];
+
+    for (let gameId of player.gamesPurchased) {
+      const game = await Game.findOne({ _id: gameId });
+      game.tags.map((tag) => {
+        if (!tags.includes(tag)) {
+          tags.push(tag);
+        }
+      });
+    }
+
+    const recommend = await Game.find({
+      tags: { $in: [...tags] },
+      _id: { $nin: [...player.gamesPurchased] },
+    });
+
+    return recommend.map((game) => {
+      return {
+        ...game._doc,
+        prequelGames: nestedGamesArray.bind(this, game.prequelGames),
+      };
+    });
   },
   rank: async (args) => {
     const top = await Player.find({});

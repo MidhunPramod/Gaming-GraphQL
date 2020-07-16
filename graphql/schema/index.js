@@ -38,6 +38,8 @@ module.exports = buildSchema(`
         searchPlayer(key:String!):[Player!]
         searchGame(key:String!):[Game!]
         rank:[Player!]
+        mutualFriends(playerA:String!,playerB:String!):String
+        recommendGames(player:String):[Game!]
     }
 
     input BuyGameInput{
