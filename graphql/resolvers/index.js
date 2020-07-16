@@ -32,6 +32,18 @@ module.exports = {
       throw error;
     }
   },
+  rank: async (args) => {
+    const top = await Player.find({});
+    top.sort((a, b) => a.gamesCompleted.length < b.gamesCompleted.length);
+    return top.slice(0, 5).map((player) => {
+      return {
+        ...player._doc,
+        _id: player.id,
+        gamesPurchased: nestedGamesArray.bind(this, player._doc.gamesPurchased),
+        gamesCompleted: nestedGamesArray.bind(this, player._doc.gamesCompleted),
+      };
+    });
+  },
   addGame: async (args) => {
     try {
       const game = new Game({
@@ -55,6 +67,10 @@ module.exports = {
           gamesPurchased: nestedGamesArray.bind(
             this,
             player._doc.gamesPurchased
+          ),
+          gamesCompleted: nestedGamesArray.bind(
+            this,
+            player._doc.gamesCompleted
           ),
         };
       });
@@ -97,6 +113,33 @@ module.exports = {
     } catch (error) {
       throw error;
     }
+  },
+  completedGame: async (args) => {
+    const game = await Game.findOne({
+      name: args.completedGameInput.game_name,
+    });
+    if (!game) {
+      throw new Error("Game does not exist");
+    }
+
+    const player = await Player.findOne({
+      name: args.completedGameInput.player_name,
+    });
+    if (!player) {
+      throw new Error("Player does not exist");
+    }
+    if (!player.gamesPurchased.includes(game.id)) {
+      throw new Error("Player has not purchased the game");
+    }
+    player.gamesCompleted.push(game.id);
+    await player.save();
+
+    return {
+      ...player._doc,
+      _id: player.id,
+      gamesPurchased: nestedGamesArray.bind(this, player._doc.gamesPurchased),
+      gamesCompleted: nestedGamesArray.bind(this, player._doc.gamesCompleted),
+    };
   },
   addPrequel: async (args) => {
     try {

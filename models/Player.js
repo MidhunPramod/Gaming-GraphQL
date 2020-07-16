@@ -19,14 +19,10 @@ const playerSchema = new Schema({
       ref: "Game",
     },
   ],
-  gameRequests: [
+  gamesCompleted: [
     {
-      from: {
-        type: String,
-      },
-      game: {
-        type: String,
-      },
+      type: Schema.Types.ObjectId,
+      ref: "Game",
     },
   ],
 });
