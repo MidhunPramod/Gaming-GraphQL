@@ -21,6 +21,12 @@ module.exports = buildSchema(`
         prequelGames:[Game!]
     }
 
+    type Request{
+        to:Player!
+        from:Player!
+        game:Game!
+    }
+
     input AddGameInput{
         name:String!
         tags:[String!]
@@ -61,7 +67,7 @@ module.exports = buildSchema(`
         buyGame(buyGameInput:BuyGameInput):Player
         addPrequel(addPrequelInput:AddPrequelInput):Game
         addFriend(addFriendInput:AddFriendInput):Player
-        sendGameRequest(sendGameRequestInput:SendGameRequestInput):String
+        sendGameRequest(sendGameRequestInput:SendGameRequestInput):Request
         completedGame(completedGameInput:BuyGameInput):Player
 
     }

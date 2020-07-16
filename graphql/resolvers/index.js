@@ -1,5 +1,6 @@
 const Player = require("../../models/Player");
 const Game = require("../../models/Game");
+const Request = require("../../models/Request");
 
 const transformGame = (game) => {
   return { ...game._doc, _id: game.id };
@@ -13,11 +14,26 @@ const nestedGamesArray = async (gameIds) => {
   return result;
 };
 
+transformPlayerId = async (playerId) => {
+  const player = await Player.findOne({ _id: playerId });
+  return { ...player._doc, _id: player.id };
+};
+
+transformGameId = async (gameId) => {
+  const game = await Game.findOne({ _id: gameId });
+  return { ...game._doc, _id: game.id };
+};
+
 module.exports = {
   players: async () => {
     const fetchedPlayers = await Player.find({});
     return fetchedPlayers.map((player) => {
-      return { ...player._doc, _id: player.id };
+      return {
+        ...player._doc,
+        _id: player.id,
+        gamesPurchased: nestedGamesArray.bind(this, player._doc.gamesPurchased),
+        gamesCompleted: nestedGamesArray.bind(this, player._doc.gamesCompleted),
+      };
     });
   },
   addPlayer: async (args) => {
@@ -82,7 +98,11 @@ module.exports = {
     try {
       const games = await Game.find({ name: { $regex: args.key } });
       return games.map((game) => {
-        return { ...game._doc, _id: game.id };
+        return {
+          ...game._doc,
+          _id: game.id,
+          prequelGames: nestedGamesArray.bind(this, game._doc.prequelGames),
+        };
       });
     } catch (error) {
       throw error;
@@ -109,6 +129,7 @@ module.exports = {
         ...player._doc,
         _id: player.id,
         gamesPurchased: nestedGamesArray.bind(this, player._doc.gamesPurchased),
+        gamesCompleted: nestedGamesArray.bind(this, player._doc.gamesCompleted),
       };
     } catch (error) {
       throw error;
@@ -223,6 +244,19 @@ module.exports = {
       }
     });
 
-    return "Successfully sent request!";
+    const request = new Request({
+      to: to.id,
+      from: from.id,
+      game: game.id,
+    });
+
+    await request.save();
+
+    return {
+      ...request._doc,
+      to: transformPlayerId.bind(this, to.id),
+      from: transformPlayerId.bind(this, from.id),
+      game: transformGameId.bind(this, game.id),
+    };
   },
 };
