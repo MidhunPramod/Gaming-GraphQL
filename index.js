@@ -4,6 +4,8 @@ const graphQLSchema = require("./graphql/schema/index");
 const graphQLResolvers = require("./graphql/resolvers/index");
 const mongoose = require("mongoose");
 
+const dotenv = require("dotenv").config();
+
 const app = express();
 
 app.use(express.json({ extended: false }));
@@ -18,10 +20,10 @@ app.use(
 );
 
 mongoose
-  .connect(
-    "mongodb+srv://midhun:midhun123@cluster0.c1hxm.mongodb.net/gaming?retryWrites=true&w=majority",
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
+  .connect(process.env.MONGOURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     app.listen(process.env.PORT || 3000, () => {
       console.log("Connected to server");
