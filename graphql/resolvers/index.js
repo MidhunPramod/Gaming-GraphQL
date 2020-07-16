@@ -82,7 +82,7 @@ module.exports = {
       _id: { $nin: [...player.gamesPurchased] },
     });
 
-    return recommend.map((game) => {
+    return recommend.slice(0, 5).map((game) => {
       return {
         ...game._doc,
         prequelGames: nestedGamesArray.bind(this, game.prequelGames),
