@@ -91,7 +91,7 @@ module.exports = {
   },
   rank: async (args) => {
     const top = await Player.find({});
-    top.sort((a, b) => a.gamesCompleted.length < b.gamesCompleted.length);
+    top.sort((a, b) => a.gamesCompleted.length > b.gamesCompleted.length);
     return top.slice(0, 5).map((player) => {
       return {
         ...player._doc,
